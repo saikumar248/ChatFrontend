@@ -10,11 +10,12 @@ const SignUp = () => {
     phoneNumber: "",
     password: "",
     confirmPassword: "",
-    otp:"",
+    otp: "",
   });
   const [error, setError] = useState("");
-  const [otp,setOtp]= useState("");
+  const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [otpVerify,setOtpVerify] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -122,7 +123,7 @@ const SignUp = () => {
 
   // Function to generate and send OTP
   const generateAndSendOtp = async () => {
-    const phoneNumber=formData.phoneNumber;
+    const phoneNumber = formData.phoneNumber;
     const date = new Date();
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
@@ -130,7 +131,7 @@ const SignUp = () => {
     setOtp(Otpxyz);
     setOtpSent(true);
 
-      const message = `Dear customer, use this OTP ${Otpxyz} to signup into your Quality Thought Next account. This OTP will be valid for the next 15 mins.`;
+    const message = `Dear customer, use this OTP ${Otpxyz} to signup into your Quality Thought Next account. This OTP will be valid for the next 15 mins.`;
     // const message = `Dear customer, use this OTP ${Otpxyz} to complete your signup authentication for the Chat App. This OTP will be valid for the next 15 minutes.`;
 
     const encodedMessage = encodeURIComponent(message);
@@ -145,6 +146,11 @@ const SignUp = () => {
     }
   };
 
+ const handleOtpSubmit =()=>{
+  if(otp==formData.otp){
+    setOtpVerify(true);
+  }
+ }
 
   return (
     <div className="container mt-5">
@@ -210,52 +216,60 @@ const SignUp = () => {
                   <br />
                 </div>
                 <div className="mb-3">
-      <label className="form-label">Phone Number</label>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <input
-          type="number"
-          className="form-control"
-          placeholder="Enter your phone number"
-          name="phoneNumber"
-          value={formData.phoneNumber}
-          onChange={handleChange}
-          required
-        />
-        <button className="btn btn-success " onClick={generateAndSendOtp}>
-          Verify
-        </button>
-      </div>
-      {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
-      {otpSent && (
-        <div className="mt-3">
-          <label className="form-label">Enter OTP</label>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Enter OTP"
-            name="otp"
-            value={formData.otp}
-            onChange={handleChange}
-            required
-          />
-          <button className="btn btn-success mt-2 w-100" 
-          onClick={handleOtpSubmit}
-          >
-            Submit OTP
-          </button>
-        </div>
-      )}
-    </div>
+                  <label className="form-label">Phone Number</label>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="Enter your phone number"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      className="btn btn-success "
+                      onClick={generateAndSendOtp}
+                    >
+                      Verify
+                    </button>
+                  </div>
+                  {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
+                  {otpSent && (
+                    <div className="mt-3">
+                      <label className="form-label">Enter OTP</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="Enter OTP"
+                        name="otp"
+                        value={formData.otp}
+                        onChange={handleChange}
+                        required
+                      />
+                      <button
+                        className="btn btn-success mt-2 w-100"
+                        onClick={handleOtpSubmit}
+                      >
+                        Submit OTP
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div>
                   {formData.phoneNumber && formData.phoneNumber.length != 10 ? (
                     <p style={{ color: "red" }}>
-                      
-                    PhoneNumber Must be exactly 10 Digits
+                      PhoneNumber Must be exactly 10 Digits
                     </p>
                   ) : null}
                 </div>
 
-                
                 <div className="mb-3">
                   <label className="form-label">Password</label>
                   <input
