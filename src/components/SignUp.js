@@ -1,6 +1,8 @@
 import axios from "axios";
 import React, { useState } from "react";
+import { Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +17,8 @@ const SignUp = () => {
   const [error, setError] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [otpVerify,setOtpVerify] = useState(false);
+  const [otpVerify, setOtpVerify] = useState(false);
+  const [showOtpField, setShowOtpField] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,6 +26,7 @@ const SignUp = () => {
   };
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  const navigate = useNavigate();
 
   const handlePostUser = () => {
     axios
@@ -42,7 +46,7 @@ const SignUp = () => {
   };
 
   const handleSubmit = async (e) => {
-    handlePostUser();
+
     e.preventDefault();
 
     const {
@@ -55,6 +59,7 @@ const SignUp = () => {
     } = formData;
 
     // Validation: Check all fields are filled
+    console.log(firstName,lastName,email,phoneNumber,password,confirmPassword)
     if (
       !firstName ||
       !lastName ||
@@ -113,16 +118,25 @@ const SignUp = () => {
       setError("Passwords do not match!");
       return;
     }
+    if (!otpVerify || otp == "") {
+      setError("Verify Mobile Number");
+      return;
+    }
 
     // If all validations pass
     setError(""); // Clear any previous errors
+    handlePostUser();
     console.log("Form data submitted:", formData);
+    navigate("/signin")
 
     // You can add further logic here to send the data to a backend or API
   };
 
-  // Function to generate and send OTP
   const generateAndSendOtp = async () => {
+
+
+
+
     const phoneNumber = formData.phoneNumber;
     const date = new Date();
     const minutes = String(date.getMinutes()).padStart(2, "0");
@@ -130,6 +144,7 @@ const SignUp = () => {
     const Otpxyz = minutes + seconds; // OTP generated using current minutes and seconds
     setOtp(Otpxyz);
     setOtpSent(true);
+    setShowOtpField(true);
 
     const message = `Dear customer, use this OTP ${Otpxyz} to signup into your Quality Thought Next account. This OTP will be valid for the next 15 mins.`;
     // const message = `Dear customer, use this OTP ${Otpxyz} to complete your signup authentication for the Chat App. This OTP will be valid for the next 15 minutes.`;
@@ -142,15 +157,24 @@ const SignUp = () => {
       console.log("API Response:", response.data);
     } catch (error) {
       console.log(error);
-      setError("API Error");
+      setError("");
     }
   };
 
- const handleOtpSubmit =()=>{
-  if(otp==formData.otp){
-    setOtpVerify(true);
-  }
- }
+  const handleOtpSubmit = () => {
+    if (otp == formData.otp) {
+      setOtpVerify(true);
+      setShowOtpField(false);
+      setError("");
+    } else {
+      setFormData({ otp: "" });
+      const otpField = document.querySelector("#otpField");
+      if (otpField) {
+        otpField.focus(); // Bring the cursor back to the OTP field
+      }
+      setError("Invalid OTP");
+    }
+  };
 
   return (
     <div className="container mt-5">
@@ -217,35 +241,41 @@ const SignUp = () => {
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Phone Number</label>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                    }}
-                  >
+                  <div className="flex items-center gap-2">
                     <input
                       type="number"
                       className="form-control"
                       placeholder="Enter your phone number"
                       name="phoneNumber"
                       value={formData.phoneNumber}
+                      disabled={otpVerify}
                       onChange={handleChange}
                       required
                     />
-                    <button
-                      className="btn btn-success "
-                      onClick={generateAndSendOtp}
-                    >
-                      Verify
-                    </button>
+                    {!otpVerify ? (
+                      <button
+                        className="btn btn-success"
+                        onClick={generateAndSendOtp}
+                        disabled={otpVerify}
+                      >
+                        Verify
+                      </button>
+                    ) : (
+                      <Check className="text-green-500 w-6 h-6" />
+                    )}
+                    {otpVerify === false && otpSent && (
+                      <X className="text-red-500 w-6 h-6" />
+                    )}
                   </div>
-                  {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
-                  {otpSent && (
+
+                  {error && <p className="text-red-500 mt-1">{error}</p>}
+
+                  {showOtpField && (
                     <div className="mt-3">
                       <label className="form-label">Enter OTP</label>
                       <input
                         type="number"
+                        id="otpField"
                         className="form-control"
                         placeholder="Enter OTP"
                         name="otp"
@@ -254,7 +284,7 @@ const SignUp = () => {
                         required
                       />
                       <button
-                        className="btn btn-success mt-2 w-100"
+                        className="btn btn-success mt-2 w-full"
                         onClick={handleOtpSubmit}
                       >
                         Submit OTP
